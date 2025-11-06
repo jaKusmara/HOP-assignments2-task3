@@ -4,6 +4,15 @@ def calcSquare(dim_series):
 def convertTo2D(dim_series):
     return dim_series.apply(lambda dims: _biggestDimensions(dims))
 
+def calcSquareStress(weight, square):
+    return weight / square
+
+def calcStressSquareCoefficient(mc, sp):
+    return (200 - mc) / sp
+
+def calcStressScore(componentStress, sheetStress):
+    return abs(componentStress) - abs(sheetStress)
+
 def _biggestDimensions(dims):
     if isinstance(dims, str):
         dims = dims.split('x')

@@ -19,20 +19,18 @@ class DatasetHandler:
 
         df['dim'] = convertTo2D(df['dim'].str.split('x'))
         df['square'] = calcSquare(df['dim'])
-        df['stressSquare'] = df['weight'] / df['square'].replace(0, pd.NA)
+        df['stressSquare'] = calcSquareStress(df['weight'], df['square'])
 
-        # 3) Oddelenie dátumu a času
         df['date'] = df['timestamp'].dt.date
         df['time'] = df['timestamp'].dt.time
 
-        # 4) Rozdelenie podľa polovice dňa
         parts = []
         cols = ['sn', 'dim', 'weight', 'count', 'date', 'time', 'square', 'stressSquare']
 
         for day in sorted(df['date'].unique()):
             day_df = df[df['date'] == day]
 
-            # 1. polovica dňa (00:00–11:59:59)
+            # 1. (00:00–11:59:59)
             first_half = day_df[day_df['timestamp'].dt.hour < 12][cols]
             first_half_values = [
                 [
@@ -49,7 +47,7 @@ class DatasetHandler:
             ]
             parts.append(first_half_values)
 
-            # 2. polovica dňa (12:00–23:59:59)
+            # 2. (12:00–23:59:59)
             second_half = day_df[day_df['timestamp'].dt.hour >= 12][cols]
             second_half_values = [
                 [
