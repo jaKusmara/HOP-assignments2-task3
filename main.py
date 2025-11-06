@@ -6,7 +6,7 @@ def main():
     ds_h = DatasetHandler(path)
 
     ds_h.load()
-    print(ds_h.prepare_data()[0])
+    print(ds_h.prepare_data())
 
 if __name__ == "__main__":
     main()

@@ -14,11 +14,9 @@ class DatasetHandler:
     def prepare_data(self):
         df = self.df.copy()
 
-        # 1) Načítanie a zoradenie podľa timestampu
         df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')
         df = df.dropna(subset=['timestamp']).sort_values('timestamp')
 
-        # 2) Dimenzie a výpočty
         df['dim'] = convertTo2D(df['dim'].str.split('x'))
         df['square'] = calcSquare(df['dim'])
         df['stressSquare'] = df['weight'] / df['square'].replace(0, pd.NA)
