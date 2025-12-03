@@ -1,4 +1,5 @@
 from dataset_handler import DatasetHandler
+from shelf import *
 
 def main():
     path = './data/dataset.csv'
@@ -6,7 +7,14 @@ def main():
     ds_h = DatasetHandler(path)
 
     ds_h.load()
-    print(ds_h.prepare_data())
+    
+    prepared_data = ds_h.prepare_data()
+
+    shelf = Shelf()
+
+    shelf.run_shelf(prepared_data)
+        
+
 
 if __name__ == "__main__":
     main()
