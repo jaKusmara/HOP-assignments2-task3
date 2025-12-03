@@ -4,8 +4,8 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 from math import inf
 from datetime import datetime
-from src.models import Component
-from src.utils import calcStressSquareCoefficient, calcStressScore
+from models import Component
+from utils import calcStressSquareCoefficient, calcStressScore
 
 
 PLATE_SIZE_CM = 500        # 5m x 5m
@@ -15,36 +15,35 @@ MARGIN_CM = 5              # 5 cm okolo reálnej súčiastky (už je v +10)
 
 # ---------- pomocná funkcia: preklad výstupu DatasetHandleru ----------
 
-def batch_to_components(batch_rows: List[list]) -> List[Component]:
+def batch_to_components(batch_rows: list[list]) -> list[Component]:
     """
-    batch_rows je to, čo vracia DatasetHandler.prepare_data():
-    [ [sn, dim(list), weight, count, date_str, time_str, square, stressSquare], ... ]
+    batch_rows teraz vyzerá takto:
+    [ sn, dim(list), weight, date_str, time_str, square, stressSquare ]
 
-    Tu:
-    - z toho spravíme Component objekty
-    - count rozbalíme na jednotlivé kusy
+    DatasetHandler už count rozbalil, takže:
+      - v batch_rows žiadny 'count' nie je
+      - každý riadok = 1 fyzický kus
     """
-    components: List[Component] = []
+    components: list[Component] = []
 
-    for sn, dim_list, weight, count, date_str, time_str, square, stress in batch_rows:
-        # rekonštrukcia timestampu
+    for sn, dim_list, weight, date_str, time_str, square, stress in batch_rows:
         ts = datetime.fromisoformat(f"{date_str} {time_str}")
         w, h = int(dim_list[0]), int(dim_list[1])
 
-        for _ in range(int(count)):
-            components.append(
-                Component(
-                    sn=str(sn),
-                    width=w,
-                    height=h,
-                    weight=float(weight),
-                    timestamp=ts,
-                    square=float(square),
-                    stress_square=float(stress),
-                )
+        components.append(
+            Component(
+                sn=str(sn),
+                width=w,
+                height=h,
+                weight=float(weight),
+                timestamp=ts,
+                square=float(square),
+                stress_square=float(stress),
             )
+        )
 
     return components
+
 
 
 # ---------- Rect / Placement / Sheet ----------
@@ -85,6 +84,7 @@ class Placement:
     w: int
     h: int
     rotated: bool
+    cumulative_weight: float
 
     @property
     def inner_x(self) -> int:
@@ -139,7 +139,7 @@ class Sheet:
     def place(self, component: Component, x: int, y: int, w: int, h: int, rotated: bool):
         placed_rect = Rect(x, y, w, h)
 
-        # split voľných obdĺžnikov
+        # split voľných obdĺžnikov ...
         i = 0
         while i < len(self.free_rects):
             fr = self.free_rects[i]
@@ -152,8 +152,13 @@ class Sheet:
 
         self._prune_free_rects()
 
-        self.placements.append(Placement(component, x, y, w, h, rotated))
-        self.current_weight += component.weight
+        # kumulatívna váha po pridaní tejto súčiastky
+        new_weight = self.current_weight + component.weight
+        self.placements.append(
+            Placement(component, x, y, w, h, rotated, new_weight)
+        )
+        self.current_weight = new_weight
+
 
     def _split_free_rect(self, free: Rect, placed: Rect) -> List[Rect]:
         res: List[Rect] = []
@@ -312,5 +317,38 @@ def sheets_to_output_rows(sheets: List[Sheet]) -> List[list]:
                 ts_str,
                 pl.inner_x,
                 pl.inner_y,
+                pl.cumulative_weight,   # NEW – kumulatívna váha plechu
             ])
     return rows
+
+def compute_stats(sheets: list[Sheet]):
+    """
+    Vráti štvorku:
+      (priemerná plocha v cm^2,
+       priemerná plocha v %,
+       priemerná váha v kg,
+       priemerná váha v %)
+    """
+    if not sheets:
+        return 0.0, 0.0, 0.0, 0.0
+
+    sheet_area = PLATE_SIZE_CM * PLATE_SIZE_CM
+
+    # plocha – berieme square z jednotlivých komponentov
+    total_area_used = 0.0
+    total_weight_used = 0.0
+
+    for sheet in sheets:
+        total_weight_used += sheet.current_weight
+        for pl in sheet.placements:
+            total_area_used += pl.component.square
+
+    n = len(sheets)
+
+    avg_area_used = total_area_used / n
+    avg_area_pct = (avg_area_used / sheet_area) * 100.0
+
+    avg_weight_used = total_weight_used / n
+    avg_weight_pct = (avg_weight_used / MAX_WEIGHT) * 100.0
+
+    return avg_area_used, avg_area_pct, avg_weight_used, avg_weight_pct
