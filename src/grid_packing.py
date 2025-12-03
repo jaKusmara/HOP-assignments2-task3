@@ -69,9 +69,50 @@ class Sheet:
             y_cm=y_cm
         )
     
+class PackingStats:
+    """
+    Štatistiky za jeden half-day pre dané riešenie (baseline / optimalizované).
+    Vstupom je zoznam plechov Sheet.
+    """
+    def __init__(self, sheets: List[Sheet]):
+        self.sheets = sheets
+        self.sheet_count = len(sheets)
+
+        # súčet hmotností na všetkých plechoch
+        self.total_weight = sum(s.current_weight for s in sheets)
+
+        # súčet využitej plochy (cm^2)
+        self.total_used_area_cm2 = sum(s.used_area_cm2 for s in sheets)
+
+        # celková plocha všetkých plechov (cm^2)
+        self.total_area_cm2 = self.sheet_count * SHEET_SIZE_CM * SHEET_SIZE_CM
+
+        # priemerné zaťaženie jedného plechu (kg)
+        self.avg_weight_per_sheet = (
+            self.total_weight / self.sheet_count if self.sheet_count > 0 else 0.0
+        )
+
+        # priemerná využitá plocha na plech (cm^2)
+        self.avg_used_area_per_sheet_cm2 = (
+            self.total_used_area_cm2 / self.sheet_count if self.sheet_count > 0 else 0.0
+        )
+
+        # priemerné využitie plochy na plech v %
+        self.avg_utilization_per_sheet_pct = (
+            self.avg_used_area_per_sheet_cm2 / (SHEET_SIZE_CM * SHEET_SIZE_CM) * 100
+            if self.sheet_count > 0 else 0.0
+        )
+
+    def __repr__(self) -> str:
+        return (
+            f"PackingStats(sheet_count={self.sheet_count}, "
+            f"avg_weight={self.avg_weight_per_sheet:.2f} kg, "
+            f"avg_area={self.avg_used_area_per_sheet_cm2:.2f} cm^2, "
+            f"avg_util={self.avg_utilization_per_sheet_pct:.2f} %)"
+        )  
 
 #--------------------------------------------------------------#
-# Funkcie pre spracovanie dát a balenie
+# Funkcie pre spracovanie dát a balenie do mriežky 
 
 
 def generate_items_for_half_day(raw_half_day_block):
@@ -152,3 +193,8 @@ def pack_items_grid(items) -> Tuple[List[PlacedItem], List[Sheet]]:
                 raise RuntimeError("Item sa nezmestí ani na prázdny plech – pravdepodobne chyba v dimenziách.")
 
     return placed, sheets
+
+def sort_items_by_area_desc(items: List[Item]) -> List[Item]:
+    """Heuristika: zoradenie podľa plochy (square) zostupne."""
+    return sorted(items, key=lambda it: it.square, reverse=True)
+
