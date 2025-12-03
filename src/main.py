@@ -3,7 +3,7 @@ from maxrects import MaxRectsPacker, batch_to_components, sheets_to_output_rows,
 import csv
 
 def main():
-    path = './data/dataset_2.csv'
+    path = './data/dataset.csv'
     ds_h = DatasetHandler(path)
     ds_h.load()
 
