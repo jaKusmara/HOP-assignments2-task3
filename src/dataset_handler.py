@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from src.utils import *
+from utils import *
 
 class DatasetHandler:
     def __init__(self, path):
@@ -17,6 +17,10 @@ class DatasetHandler:
         df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')
         df = df.dropna(subset=['timestamp']).sort_values('timestamp')
 
+        df = df.loc[df.index.repeat(df['count'])].copy()
+        df.drop(columns='count', inplace=True)
+        df.reset_index(drop=True, inplace=True)
+
         df['dim'] = convertTo2D(df['dim'].str.split('x'))
         df['square'] = calcSquare(df['dim'])
         df['stressSquare'] = calcSquareStress(df['weight'], df['square'])
@@ -25,7 +29,7 @@ class DatasetHandler:
         df['time'] = df['timestamp'].dt.time
 
         parts = []
-        cols = ['sn', 'dim', 'weight', 'count', 'date', 'time', 'square', 'stressSquare']
+        cols = ['sn', 'dim', 'weight', 'date', 'time', 'square', 'stressSquare']
 
         for day in sorted(df['date'].unique()):
             day_df = df[df['date'] == day]
@@ -37,7 +41,6 @@ class DatasetHandler:
                     row['sn'],
                     list(row['dim']),
                     row['weight'],
-                    row['count'],
                     row['date'].isoformat(),
                     row['time'].isoformat(),
                     row['square'],
@@ -54,7 +57,6 @@ class DatasetHandler:
                     row['sn'],
                     list(row['dim']),
                     row['weight'],
-                    row['count'],
                     row['date'].isoformat(),
                     row['time'].isoformat(),
                     row['square'],

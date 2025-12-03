@@ -1,4 +1,4 @@
-from src.dataset_handler import DatasetHandler
+from dataset_handler import DatasetHandler
 
 def main():
     path = './data/dataset.csv'
