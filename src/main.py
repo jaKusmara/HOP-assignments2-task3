@@ -20,12 +20,11 @@ def main():
         rows = sheets_to_output_rows(sheets)
         all_rows.extend(rows)
 
-    with open('./data/output.csv', 'w', newline='') as f:
+    with open('./output/output_maxrects.csv', 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerows(all_rows)
 
-    for row in all_rows[:10]:
-        print(row)
+    print("Done...")
 
 if __name__ == "__main__":
     main()
