@@ -86,7 +86,7 @@ class Shelf:
 
             # uloženie výsledku
             self.komponent_res.append(
-                [self._sheet_no, komponent[0], komponent[3], komponent[4], self._shelf_x, self._shelf_y, k_x, k_y]
+                [self._sheet_no, komponent[0], komponent[3], komponent[4], self._shelf_x, self._shelf_y, k_x, k_y, self._current_weight]
             )
 
         if self._current_weight > 0:
