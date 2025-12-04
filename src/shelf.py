@@ -1,8 +1,8 @@
 import csv
 
 class Shelf:
-    MAX_WIDTH = 200.0
-    MAX_HEIGHT = 200.0
+    MAX_WIDTH = 500.0
+    MAX_HEIGHT = 500.0
     MAX_WEIGHT = 200.0
 
     def __init__(self):
