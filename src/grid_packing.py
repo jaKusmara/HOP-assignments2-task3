@@ -186,7 +186,7 @@ class GridPacking:
         """
         import csv
 
-        output_path = './data/output.csv'
+        output_path = './output/output.csv'
         with open(output_path, 'w', newline='') as f_opt:
             writer_opt = csv.writer(f_opt)
 

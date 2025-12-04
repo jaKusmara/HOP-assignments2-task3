@@ -33,9 +33,11 @@ class Shelf:
     # --------- MAIN ---------
     def run_shelf(self, dataset):
         self.komponent_res.clear()
+
         for komponents in dataset:
             self._sheet_no = 0
             self._make_shelf(komponents)
+
         self._write_csv()
         
     
