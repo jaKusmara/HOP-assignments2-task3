@@ -2,14 +2,17 @@ from dataset_handler import DatasetHandler
 from shelf import *
 from maxrects import MaxRectsPacker, batch_to_components, sheets_to_output_rows, compute_stats
 import csv
+from grid_packing import GridPacking
 
 def main():
+    # NACITANIE A SPRACOVANIE DF
     path = './data/dataset.csv'
     ds_h = DatasetHandler(path)
     ds_h.load()
     
     prepared_data = ds_h.prepare_data()
 
+    # SHELF
     shelf = Shelf()
 
     shelf.run_shelf(prepared_data)
@@ -17,19 +20,16 @@ def main():
     avg_w, avg_w_pct = shelf.get_sheet_avg_weight()
     avg_a, avg_a_pct = shelf.get_sheet_avg_area()
 
+    print("\n--- Štatistika plechov SHELF ---")
     print(f"Priemerná váha na plech: {avg_w:.2f} kg ({avg_w_pct:.2f} %)")
     print(f"Priemerná zabrata plocha: {avg_a:.2f} mm² ({avg_a_pct:.2f} %)")
 
-        
-
-
-    raw_batches = ds_h.prepare_data()
-
+    # MAXRECTS
     packer = MaxRectsPacker()
     all_rows = []
     all_sheets = []
 
-    for batch_rows in raw_batches:
+    for batch_rows in prepared_data:
         if not batch_rows:
             continue
         components = batch_to_components(batch_rows)
@@ -44,27 +44,21 @@ def main():
 
     avg_area, avg_area_pct, avg_w, avg_w_pct = compute_stats(all_sheets)
 
-    print("\n--- Štatistika plechov ---")
+    print("\n--- Štatistika plechov MAXRECTS ---")
     print(f"Priemerné využitie plochy na plech: {avg_area:.2f} cm^2 ({avg_area_pct:.2f} %)")
     print(f"Priemerné zaťaženie plechu:        {avg_w:.2f} kg ({avg_w_pct:.2f} %)")
-from grid_packing import GridPacking
 
-
-def main():
-    path = './data/dataset.csv'
-
-    ds_h = DatasetHandler(path)
-    ds_h.load()
-    prepared_data = ds_h.prepare_data()
-
+    # GRID PACKING
     grid = GridPacking()
     grid.run(prepared_data)
 
     avg_w, avg_w_pct = grid.get_sheet_avg_weight()
     avg_a, avg_a_pct = grid.get_sheet_avg_area()
 
+    print("\n--- Štatistika plechov GRID PACKING ---")
     print(f"Priemerné zaťaženie plechu: {avg_w:.2f} kg ({avg_w_pct:.2f} %)")
     print(f"Priemerné využitie plechu: {avg_a:.2f} cm^2 ({avg_a_pct:.2f} %)")
+
 
 
 if __name__ == "__main__":
