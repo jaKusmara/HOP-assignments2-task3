@@ -207,6 +207,4 @@ marimo/_lsp/
 __marimo__/
 
 # Output
-grid_output.csv
-maxrects_output.csv
-shelf_output.csv
+output/*.csv
