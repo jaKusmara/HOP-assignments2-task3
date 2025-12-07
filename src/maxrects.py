@@ -317,7 +317,6 @@ def sheets_to_output_rows(sheets: List[Sheet]) -> List[list]:
                 ts_str,
                 pl.inner_x,
                 pl.inner_y,
-                pl.cumulative_weight,   # NEW – kumulatívna váha plechu
             ])
     return rows
 

@@ -38,7 +38,8 @@ def main():
     all_rows = []
     all_sheets = []
 
-    def run_maxrects():
+
+    def run_maxrects(prepared_data):
         nonlocal all_rows, all_sheets
         for batch_rows in prepared_data:
             if not batch_rows:
@@ -50,12 +51,12 @@ def main():
             all_rows.extend(rows)
 
 
-    with open('./output/output_maxrects.csv', 'w', newline='') as f:
+    print("\n--- Štatistika plechov MAXRECTS ---")
+    timer("MAXRECTS", run_maxrects, prepared_data)
+
+    with open('./output/maxrects_output.csv', 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerows(all_rows)
-
-    print("\n--- Štatistika plechov MAXRECTS ---")
-    timer("MAXRECTS", run_maxrects)
 
     avg_area, avg_area_pct, avg_w, avg_w_pct = compute_stats(all_sheets)
     
